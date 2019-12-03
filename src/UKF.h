@@ -21,15 +21,16 @@ public:
   void updatePredStateSig(const Eigen::MatrixXd &state_sig);
   void updatePredStateMean();
   void updatePredStateCov();
-
-  void updateLaser();
+  
+  void updateState();
+  void updateStateByLaser();
   void predictMeasurementLaser();
   void updatePredMeasurementMeanLaser();
   void updatePredMeasurementCovLaser();
   void updateKalmanGainLaser();
   void updateStateLaser();
   
-  void updateRadar();
+  void updateStateByRadar();
   void predictMeasurementRadar();
   void updatePredMeasurementSig();
   void updatePredMeasurementMeanRadar();
@@ -55,6 +56,9 @@ public:
   void setStateCov(const Eigen::MatrixXd &state_cov);
   void setPredMeasurementCov(const Eigen::MatrixXd &pred_measurement_cov);
 
+  bool isRadar(){return sensor_type_ == MeasurementPackage::RADAR;};
+  bool isLaser(){return sensor_type_ == MeasurementPackage::LASER;};
+
   void print();
 
 private:
@@ -72,7 +76,7 @@ private:
   Eigen::MatrixXd pred_measurement_cov_;
   Eigen::MatrixXd measurement_matrix_laser_;
   // time when the state is true, in us
-  long long update_time_us_;
+  long long previous_timestamp_;
   double dt_;
   MeasurementPackage::SensorType sensor_type_;
   // Process noise standard deviation longitudinal acceleration in m/s^2

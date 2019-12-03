@@ -40,19 +40,54 @@ void addEpsIfZero(double &div)
   }
 }
 
-double normalizeTheta(double theta)
+void normalizeRadarMeasurement(Eigen::VectorXd &measurement)
 {
-  if (theta > M_PI)
-  {
+  double theta = measurement[1];
+  if (theta > M_PI){
     theta -= 2*M_PI;
   }
-
-  if (theta < -M_PI) 
-  {
+  if (theta < -M_PI){
     theta += 2*M_PI;
   }
+  measurement[1] = theta;
+}
 
-  return theta;
+MeasurementPackage readMeasurement(std::istringstream &iss)
+{
+  std::string sensor_type;
+  iss >> sensor_type;
+  MeasurementPackage meas_package;
+
+  if (sensor_type.compare("L") == 0){
+    meas_package.sensor_type_ = MeasurementPackage::LASER;
+    meas_package.raw_measurements_ = Eigen::VectorXd(2);
+    float px, py;
+    iss >> px >> py;
+    meas_package.raw_measurements_ << px, py;
+  }
+  else if (sensor_type.compare("R") == 0)
+  {
+    meas_package.sensor_type_ = MeasurementPackage::RADAR;
+    meas_package.raw_measurements_ = Eigen::VectorXd(3);
+    float ro, theta, ro_dot;
+    iss >> ro >> theta >> ro_dot;
+    meas_package.raw_measurements_ << ro, theta, ro_dot;
+  }
+
+  long long timestamp;
+  iss >> timestamp;
+  meas_package.timestamp_ = timestamp;
+
+  return meas_package;
+}
+
+Eigen::VectorXd readGroundTruth(std::istringstream &iss)
+{
+  float x_gt, y_gt, vx_gt, vy_gt;
+  iss >> x_gt >> y_gt >> vx_gt >> vy_gt;
+  Eigen::VectorXd gt_values(4);
+  gt_values << x_gt, y_gt, vx_gt, vy_gt;
+  return gt_values;
 }
 
 Eigen::VectorXd stateToEstimate(const Eigen::VectorXd &state_mean)

@@ -1,27 +1,18 @@
 cmake_minimum_required (VERSION 3.5)
 
-set(this UnscentedKFMain)
+project(KalmanFilter})
 
-project(${this})
+add_definitions(-std=c++11)
 
-set(CMAKE_CXX_STANDARD 11)
 set(CXX_FLAGS "-Wall")
-set(CMAKE_CXX_FLAGS "${CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_FLAGS}")
 
-SET(CMAKE_BUILD_TYPE "Debug")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
+set(sources src/UKF_main.cpp src/tools.cpp src/UKF.cpp src/tools.h src/UKF.h)
 
-include_directories(src)
-add_subdirectory(src)
+add_executable(ExtendedKF ${sources})
+target_link_libraries(ExtendedKF z ssl uv uWS)
 
-enable_testing()
-add_subdirectory(googletest)
+set(sources src/EKF_main.cpp src/tools.cpp src/EKF.cpp src/tools.h src/EKF.h)
 
-set(sources src/main_test.cpp src/tools.cpp src/ukf.cpp src/ukf.h src/tools.h)
-
-add_library(${this} STATIC ${sources})
-target_link_libraries(${this} z ssl uv uWS)
-
-add_subdirectory(test)
-
-
+add_executable(UnscentedKF ${sources})
+target_link_libraries(UnscentedKF z ssl uv uWS)
