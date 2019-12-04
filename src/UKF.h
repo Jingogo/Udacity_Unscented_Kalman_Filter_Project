@@ -10,8 +10,8 @@ public:
   virtual ~UKF();
   void initWeights();
   const bool isInitialized() const {return initializationFlag;};
-  void processMeasurement(const MeasurementPackage &measPackage);
-  void readMeasurementPackage(const MeasurementPackage &measPackage);
+  void processMeasurement(const MeasurementPackage &measurementPackage);
+  void readMeasurementPackage(const MeasurementPackage &measurementPackage);
   void initUKF();
   void initStateMean();
   void initStateCov();
@@ -46,11 +46,11 @@ private:
   double dt_ = 0.0;
   MeasurementPackage::SensorType sensorType_ = MeasurementPackage::RADAR;
 
-  int stateDim_ = 5;
-  int augmentedStateDim_ = 7;
-  int radarMeasurementDim_ = 3;
-
-  double lambda_;
+  const int stateDim_ = 5;
+  const int augmentedStateDim_ = 7;
+  const int radarMeasurementDim_ = 3;
+  const int laserMeasurementDim_ = 2;
+  const double lambda_ = 3 - stateDim_;;
   Eigen::VectorXd weights_;
 
   Eigen::VectorXd measurement_;
@@ -61,11 +61,11 @@ private:
   Eigen::VectorXd predictedMeasurementMean_;
   Eigen::MatrixXd predictedMeasurementCov_;
   Eigen::MatrixXd laserMeasurementMatrix_;
+  Eigen::MatrixXd kalmanGain_;
 
   Eigen::MatrixXd processNoiseCov_;
   Eigen::MatrixXd radarMeasurementNoiseCov_;
   Eigen::MatrixXd laserMeasurementNoiseCov_;
-  Eigen::MatrixXd kalmanGain_;
 };
 
 #endif  // UKF_H

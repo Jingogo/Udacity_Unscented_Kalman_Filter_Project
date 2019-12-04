@@ -9,17 +9,10 @@ UKF::UKF(Eigen::MatrixXd processNoiseCov, Eigen::MatrixXd radarMeasurementNoiseC
          radarMeasurementNoiseCov_(radarMeasurementNoiseCov),
          laserMeasurementNoiseCov_(laserMeasurementNoiseCov)
 {
-  stateMean_ = Eigen::VectorXd(stateDim_);
-  stateCov_ = Eigen::MatrixXd(stateDim_, stateDim_);
-  predictedStateSig_ = Eigen::MatrixXd(stateDim_, 2*augmentedStateDim_ + 1);
-  predictedMeasurementSig_ = Eigen::MatrixXd(radarMeasurementDim_, 2*augmentedStateDim_ + 1);
-  predictedMeasurementCov_ = Eigen::MatrixXd(3,3);
-  lambda_ = 3 - stateDim_;
   initWeights();
   laserMeasurementMatrix_ = Eigen::MatrixXd(2, 5);
   laserMeasurementMatrix_ << 1, 0, 0, 0, 0,
       0, 1, 0, 0, 0;
-  kalmanGain_ = Eigen::MatrixXd(5,3);
 }
 
 UKF::~UKF() {}
@@ -31,9 +24,9 @@ void UKF::initWeights()
   weights_.tail(2 * augmentedStateDim_).setConstant(1.0 / (2 * (lambda_ + augmentedStateDim_)));
 }
 
-void UKF::processMeasurement(const MeasurementPackage &measPackage)
+void UKF::processMeasurement(const MeasurementPackage &measurementPackage)
 {
-  readMeasurementPackage(measPackage);
+  readMeasurementPackage(measurementPackage);
   if (!isInitialized())
   {
     initUKF();
@@ -45,11 +38,11 @@ void UKF::processMeasurement(const MeasurementPackage &measPackage)
   }
 }
 
-void UKF::readMeasurementPackage(const MeasurementPackage &measPackage)
+void UKF::readMeasurementPackage(const MeasurementPackage &measurementPackage)
 {
-  measurement_ = measPackage.rawMeasurements_;
-  sensorType_ = measPackage.sensorType_;
-  long long newTimestamp = measPackage.timestamp_;
+  measurement_ = measurementPackage.rawMeasurements_;
+  sensorType_ = measurementPackage.sensorType_;
+  long long newTimestamp = measurementPackage.timestamp_;
   dt_ = (newTimestamp - previousTimestamp_) / 1000000.0;
   previousTimestamp_ = newTimestamp;
 }
@@ -76,11 +69,14 @@ void UKF::initStateMean()
     px = measurement_[0];
     py = measurement_[1];
   }
+
+  stateMean_ = Eigen::VectorXd(stateDim_);  
   stateMean_ << px, py, 0, 0, 0;
 }
 
 void UKF::initStateCov()
 {
+  stateCov_ = Eigen::MatrixXd(stateDim_, stateDim_);
   stateCov_ << 1, 0, 0, 0, 0,
       0, 1, 0, 0, 0,
       0, 0, 1, 0, 0,
@@ -126,6 +122,7 @@ void UKF::updatePredStateSig(const Eigen::MatrixXd &stateSig)
   Eigen::VectorXd accelerationNoise = stateSig.row(5);
   Eigen::VectorXd yawAccelerationNoise = stateSig.row(6);
 
+  predictedStateSig_ = Eigen::MatrixXd(stateDim_, 2*augmentedStateDim_ + 1);
   predictedStateSig_.row(2) = v + dt_ * accelerationNoise;
   predictedStateSig_.row(3) = yaw + dt_ * yawRate + 0.5 * dt_ * dt_ * yawAccelerationNoise;
   predictedStateSig_.row(4) = yawRate + dt_ * yawAccelerationNoise;
@@ -204,6 +201,8 @@ void UKF::updatePredMeasurementSig()
   Eigen::ArrayXd v = predictedStateSig_.row(2);
   Eigen::ArrayXd yaw = predictedStateSig_.row(3);
   Eigen::ArrayXd yawRate = predictedStateSig_.row(4);
+
+  predictedMeasurementSig_ = Eigen::MatrixXd(radarMeasurementDim_, 2*augmentedStateDim_ + 1);
   for (int i = 0; i < (2 * augmentedStateDim_ + 1); i++)
   {
     if (abs(px(i)) < eps)
@@ -226,7 +225,8 @@ void UKF::updatePredRadarMeasurementMean()
 void UKF::updatePredRadarMeasurementCov()
 {
   Eigen::ArrayXXd error = predictedMeasurementSig_.colwise() - predictedMeasurementMean_;
-  Eigen::MatrixXd weighted_error = error.rowwise() * weights_.transpose().array();
+  Eigen::MatrixXd weighted_error = error.rowwise() * weights_.transpose().array();   
+  predictedMeasurementCov_ = Eigen::MatrixXd(radarMeasurementDim_,radarMeasurementDim_);
   predictedMeasurementCov_ = weighted_error * error.matrix().transpose() + radarMeasurementNoiseCov_;
 }
 
@@ -237,6 +237,7 @@ void UKF::updateKalmanGainRadar()
   Eigen::MatrixXd pred_weighted_state_error = predictedStateError.rowwise() * weights_.transpose().array();
   Eigen::MatrixXd pred_state_measurement_cov = pred_weighted_state_error * pred_measurement_error.matrix().transpose();
 
+  kalmanGain_ = Eigen::MatrixXd(5,3);
   kalmanGain_ = pred_state_measurement_cov * predictedMeasurementCov_.inverse();
 }
 

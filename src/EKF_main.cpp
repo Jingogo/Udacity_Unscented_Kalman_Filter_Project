@@ -20,16 +20,16 @@ int main(int argc, char *argv[]){
   }
 
   Eigen::VectorXd processNoise(2);
-  Eigen::MatrixXd RadarMeasurementNoiseCov(3, 3);
-  Eigen::MatrixXd laserMeasurementNoise(2, 2);
+  Eigen::MatrixXd RadarMeasNoiseCov(3, 3);
+  Eigen::MatrixXd laserMeasNoise(2, 2);
   processNoise << 9.0, 9.0;
-  laserMeasurementNoise << 0.0225, 0,
+  laserMeasNoise << 0.0225, 0,
       0, 0.0225;
-  RadarMeasurementNoiseCov << 0.09, 0, 0,
+  RadarMeasNoiseCov << 0.09, 0, 0,
       0, 0.0009, 0,
       0, 0, 0.09;
 
-  EKF ekf(processNoise, RadarMeasurementNoiseCov, laserMeasurementNoise);
+  EKF ekf(processNoise, RadarMeasNoiseCov, laserMeasNoise);
   std::vector<Eigen::VectorXd> estimations;
   std::vector<Eigen::VectorXd> groundTruths;
   std::string line;
@@ -37,8 +37,8 @@ int main(int argc, char *argv[]){
   while (std::getline(inputFile, line)){  
     std::istringstream iss(line);
 
-    MeasurementPackage measPackage = tools::readMeasurement(iss);
-    ekf.processMeasurement(measPackage);
+    MeasurementPackage measurementPackage = tools::readMeasurement(iss);
+    ekf.processMeasurement(measurementPackage);
 
     Eigen::VectorXd groundTruth = tools::readGroundTruth(iss);
     groundTruths.push_back(groundTruth);

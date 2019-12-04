@@ -10,7 +10,7 @@
 
 class EKF{
 public:
-  EKF(Eigen::VectorXd processNoise, Eigen::MatrixXd RadarMeasurementNoiseCov, Eigen::MatrixXd laserMeasurementNoiseCov);
+  EKF(Eigen::VectorXd processNoise, Eigen::MatrixXd RadarMeasNoiseCov, Eigen::MatrixXd laserMeasNoiseCov);
   virtual ~EKF();
   bool isInitialized(){return initializationFlag;};
   void processMeasurement(const MeasurementPackage &measurementPack);
@@ -26,7 +26,7 @@ public:
   void updateStateByLaser();
   void updateRadarMeasurementMatrix();
   Eigen::MatrixXd calculateJacobian();
-  Eigen::VectorXd PredMeasurement();
+  Eigen::VectorXd predictMeasurement();
   bool isRadar(){return sensorType_ == MeasurementPackage::RADAR;};
   bool isLaser(){return sensorType_ == MeasurementPackage::LASER;};
 
@@ -43,7 +43,7 @@ public:
   Eigen::VectorXd stateMean_;
   Eigen::MatrixXd stateCov_;
   Eigen::MatrixXd stateTransitionMatrix_;
-  Eigen::MatrixXd noise_;
+  Eigen::MatrixXd processNoise_;
   Eigen::MatrixXd processNoiseCov_;
   Eigen::MatrixXd radarMeasurementNoiseCov_;
   Eigen::MatrixXd laserMeasurementNoiseCov_;

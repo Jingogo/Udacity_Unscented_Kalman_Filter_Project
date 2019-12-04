@@ -56,46 +56,46 @@ MeasurementPackage readMeasurement(std::istringstream &iss)
 {
   std::string sensorType_;
   iss >> sensorType_;
-  MeasurementPackage measPackage;
+  MeasurementPackage measurementPackage;
 
   if (sensorType_.compare("L") == 0){
-    measPackage.sensorType_ = MeasurementPackage::LASER;
-    measPackage.rawMeasurements_ = Eigen::VectorXd(2);
+    measurementPackage.sensorType_ = MeasurementPackage::LASER;
+    measurementPackage.rawMeasurements_ = Eigen::VectorXd(2);
     float px, py;
     iss >> px >> py;
-    measPackage.rawMeasurements_ << px, py;
+    measurementPackage.rawMeasurements_ << px, py;
   }
   else if (sensorType_.compare("R") == 0)
   {
-    measPackage.sensorType_ = MeasurementPackage::RADAR;
-    measPackage.rawMeasurements_ = Eigen::VectorXd(3);
+    measurementPackage.sensorType_ = MeasurementPackage::RADAR;
+    measurementPackage.rawMeasurements_ = Eigen::VectorXd(3);
     float ro, theta, ro_dot;
     iss >> ro >> theta >> ro_dot;
-    measPackage.rawMeasurements_ << ro, theta, ro_dot;
+    measurementPackage.rawMeasurements_ << ro, theta, ro_dot;
   }
 
   long long timestamp;
   iss >> timestamp;
-  measPackage.timestamp_ = timestamp;
+  measurementPackage.timestamp_ = timestamp;
 
-  return measPackage;
+  return measurementPackage;
 }
 
 Eigen::VectorXd readGroundTruth(std::istringstream &iss)
 {
   float x_gt, y_gt, vx_gt, vy_gt;
   iss >> x_gt >> y_gt >> vx_gt >> vy_gt;
-  Eigen::VectorXd groundTruth(4);
-  groundTruth << x_gt, y_gt, vx_gt, vy_gt;
-  return groundTruth;
+  Eigen::VectorXd gt_values(4);
+  gt_values << x_gt, y_gt, vx_gt, vy_gt;
+  return gt_values;
 }
 
-Eigen::VectorXd stateToEstimate(const Eigen::VectorXd &stateMean)
+Eigen::VectorXd stateToEstimate(const Eigen::VectorXd &state_mean)
 {
-  double p_x = stateMean(0);
-  double p_y = stateMean(1);
-  double v = stateMean(2);
-  double yaw = stateMean(3);
+  double p_x = state_mean(0);
+  double p_y = state_mean(1);
+  double v = state_mean(2);
+  double yaw = state_mean(3);
 
   double v1 = cos(yaw) * v;
   double v2 = sin(yaw) * v;

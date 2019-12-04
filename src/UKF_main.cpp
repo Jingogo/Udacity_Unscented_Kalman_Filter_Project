@@ -48,8 +48,8 @@ int main(int argc, char *argv[])
   {
     std::istringstream iss(line);
     
-    MeasurementPackage measPackage = tools::readMeasurement(iss); 
-    ukf.processMeasurement(measPackage);
+    MeasurementPackage measurementPackage = tools::readMeasurement(iss); 
+    ukf.processMeasurement(measurementPackage);
 
     Eigen::VectorXd groundTruth = tools::readGroundTruth(iss);
     groundTruths.push_back(groundTruth);

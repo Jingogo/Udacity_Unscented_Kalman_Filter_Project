@@ -5,18 +5,13 @@
 #include "tools.h"
 
 EKF::EKF(Eigen::VectorXd processNoise, Eigen::MatrixXd RadarMeasurementNoiseCov, Eigen::MatrixXd laserMeasurementNoiseCov):
-         noise_(processNoise),
+         processNoise_(processNoise),
          radarMeasurementNoiseCov_(RadarMeasurementNoiseCov),
          laserMeasurementNoiseCov_(laserMeasurementNoiseCov)
 {
-  stateMean_ = Eigen::VectorXd(4);
-  stateCov_ = Eigen::MatrixXd(4, 4);
-  stateTransitionMatrix_ = Eigen::MatrixXd(4, 4);
-  processNoiseCov_ = Eigen::MatrixXd(4, 4);
   laserMeasurementMatrix_ = Eigen::MatrixXd(2, 4);
   laserMeasurementMatrix_ << 1.0, 0, 0, 0,
       0, 1.0, 0, 0;
-  radarMeasurementMatrix_ = Eigen::MatrixXd(3, 4);
 };
 
 EKF::~EKF() {}
@@ -66,11 +61,13 @@ void EKF::initStateMean()
     px = measurement_[0];
     py = measurement_[1];
   }
+  stateMean_ = Eigen::VectorXd(4);
   stateMean_ << px, py, 0, 0;
 }
 
 void EKF::initStateCov()
 {
+  stateCov_ = Eigen::MatrixXd(4, 4);
   stateCov_ << 1., 0, 0, 0,
       0, 1., 0, 0,
       0, 0, 1000., 0,
@@ -87,6 +84,7 @@ void EKF::predictState()
 
 void EKF::updateStateTransitionMatrix()
 {
+  stateTransitionMatrix_ = Eigen::MatrixXd(4, 4);
   stateTransitionMatrix_ << 1, 0, dt_, 0,
       0, 1, 0, dt_,
       0, 0, 1, 0,
@@ -98,8 +96,9 @@ void EKF::updateProcessNoiseCov()
   const double dt_2 = dt_ * dt_;
   const double dt_3 = dt_2 * dt_;
   const double dt_4 = dt_3 * dt_;
-  double noise_ax = noise_(0);
-  double noise_ay = noise_(1);
+  double noise_ax = processNoise_(0);
+  double noise_ay = processNoise_(1);
+  processNoiseCov_ = Eigen::MatrixXd(4, 4);
   processNoiseCov_ << dt_4 * noise_ax / 4, 0, dt_3 * noise_ax / 2, 0,
       0, dt_4 * noise_ay / 4, 0, dt_3 * noise_ay / 2,
       dt_3 * noise_ax / 2, 0, dt_2 * noise_ax, 0,
@@ -124,7 +123,7 @@ void EKF::updateStateByRadar()
   Eigen::MatrixXd Ht = radarMeasurementMatrix_.transpose();
   Eigen::MatrixXd S = (radarMeasurementMatrix_ * stateCov_) * Ht + radarMeasurementNoiseCov_;
   Eigen::MatrixXd kalman_gain = stateCov_ * Ht * S.inverse();
-  Eigen::VectorXd pred_measurement = PredMeasurement();
+  Eigen::VectorXd pred_measurement = predictMeasurement();
   Eigen::VectorXd measurement_diff = measurement_ - pred_measurement;
   tools::normalizeRadarMeasurement(measurement_diff);
   Eigen::MatrixXd I = Eigen::MatrixXd::Identity(4, 4);
@@ -166,7 +165,7 @@ Eigen::MatrixXd EKF::calculateJacobian()
   return jacobian;
 }
 
-Eigen::VectorXd EKF::PredMeasurement()
+Eigen::VectorXd EKF::predictMeasurement()
 {
   double px = stateMean_(0);
   double py = stateMean_(1);
