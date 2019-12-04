@@ -3,7 +3,7 @@
 
 #include <vector>
 #include "Eigen/Dense"
-#include "measurement_package.h"
+#include "measurementPackage.h"
 
 namespace tools
 {
@@ -13,7 +13,7 @@ namespace tools
   void normalizeRadarMeasurement(Eigen::VectorXd &measurement);
   MeasurementPackage readMeasurement(std::istringstream &iss);
   Eigen::VectorXd readGroundTruth(std::istringstream &iss);
-  Eigen::VectorXd stateToEstimate(const Eigen::VectorXd &state_mean);
+  Eigen::VectorXd stateToEstimate(const Eigen::VectorXd &stateMean);
   double compareExpectedToActual(const Eigen::VectorXd &expected, const Eigen::VectorXd &actual);
   double compareExpectedToActual(const Eigen::MatrixXd &expected, const Eigen::MatrixXd &actual);
 } // namespace tools

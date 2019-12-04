@@ -8,26 +8,26 @@ using std::vector;
 namespace tools
 {
 Eigen::VectorXd calculateRMSE(const vector<Eigen::VectorXd> &estimations,
-                                     const vector<Eigen::VectorXd> &ground_truth)
+                                     const vector<Eigen::VectorXd> &groundTruths)
 {
-  if (estimations.empty() or ground_truth.empty())
+  if (estimations.empty() or groundTruths.empty())
   {
     throw "Empty estimations or groud truth.";
   }
-  auto estimations_begin = estimations.begin();
-  auto ground_truth_begin = ground_truth.begin();
+  auto estimationsBegin = estimations.begin();
+  auto groundTruthsBegin = groundTruths.begin();
   
   Eigen::VectorXd RMSE(4);
   RMSE << 0,0,0,0;
-  for (; estimations_begin != estimations.cend(); estimations_begin++, ground_truth_begin++)
+  for (; estimationsBegin != estimations.cend(); estimationsBegin++, groundTruthsBegin++)
   {
-    Eigen::ArrayXd diff = *estimations_begin - *ground_truth_begin;
+    Eigen::ArrayXd diff = *estimationsBegin - *groundTruthsBegin;
     Eigen::VectorXd MSE = diff * diff;
     RMSE += MSE;
   }
 
-  const auto estimations_size = estimations.size();
-  RMSE = RMSE/estimations_size;
+  const auto estimationsSize = estimations.size();
+  RMSE = RMSE/estimationsSize;
   RMSE = RMSE.array().sqrt();
   return RMSE;
 }
@@ -54,48 +54,48 @@ void normalizeRadarMeasurement(Eigen::VectorXd &measurement)
 
 MeasurementPackage readMeasurement(std::istringstream &iss)
 {
-  std::string sensor_type;
-  iss >> sensor_type;
-  MeasurementPackage meas_package;
+  std::string sensorType_;
+  iss >> sensorType_;
+  MeasurementPackage measPackage;
 
-  if (sensor_type.compare("L") == 0){
-    meas_package.sensor_type_ = MeasurementPackage::LASER;
-    meas_package.raw_measurements_ = Eigen::VectorXd(2);
+  if (sensorType_.compare("L") == 0){
+    measPackage.sensorType_ = MeasurementPackage::LASER;
+    measPackage.rawMeasurements_ = Eigen::VectorXd(2);
     float px, py;
     iss >> px >> py;
-    meas_package.raw_measurements_ << px, py;
+    measPackage.rawMeasurements_ << px, py;
   }
-  else if (sensor_type.compare("R") == 0)
+  else if (sensorType_.compare("R") == 0)
   {
-    meas_package.sensor_type_ = MeasurementPackage::RADAR;
-    meas_package.raw_measurements_ = Eigen::VectorXd(3);
+    measPackage.sensorType_ = MeasurementPackage::RADAR;
+    measPackage.rawMeasurements_ = Eigen::VectorXd(3);
     float ro, theta, ro_dot;
     iss >> ro >> theta >> ro_dot;
-    meas_package.raw_measurements_ << ro, theta, ro_dot;
+    measPackage.rawMeasurements_ << ro, theta, ro_dot;
   }
 
   long long timestamp;
   iss >> timestamp;
-  meas_package.timestamp_ = timestamp;
+  measPackage.timestamp_ = timestamp;
 
-  return meas_package;
+  return measPackage;
 }
 
 Eigen::VectorXd readGroundTruth(std::istringstream &iss)
 {
   float x_gt, y_gt, vx_gt, vy_gt;
   iss >> x_gt >> y_gt >> vx_gt >> vy_gt;
-  Eigen::VectorXd gt_values(4);
-  gt_values << x_gt, y_gt, vx_gt, vy_gt;
-  return gt_values;
+  Eigen::VectorXd groundTruth(4);
+  groundTruth << x_gt, y_gt, vx_gt, vy_gt;
+  return groundTruth;
 }
 
-Eigen::VectorXd stateToEstimate(const Eigen::VectorXd &state_mean)
+Eigen::VectorXd stateToEstimate(const Eigen::VectorXd &stateMean)
 {
-  double p_x = state_mean(0);
-  double p_y = state_mean(1);
-  double v = state_mean(2);
-  double yaw = state_mean(3);
+  double p_x = stateMean(0);
+  double p_y = stateMean(1);
+  double v = stateMean(2);
+  double yaw = stateMean(3);
 
   double v1 = cos(yaw) * v;
   double v2 = sin(yaw) * v;

@@ -5,16 +5,16 @@
 #include <string>
 #include <vector>
 #include "Eigen/Dense"
-#include "measurement_package.h"
+#include "measurementPackage.h"
 #include "tools.h"
 
 class EKF{
 public:
-  EKF(Eigen::MatrixXd R_laser, Eigen::MatrixXd R_radar, Eigen::VectorXd noise);
+  EKF(Eigen::VectorXd processNoise, Eigen::MatrixXd RadarMeasurementNoiseCov, Eigen::MatrixXd laserMeasurementNoiseCov);
   virtual ~EKF();
-  bool isInitialized(){return is_initialized_;};
-  void processMeasurement(const MeasurementPackage &measurement_pack);
-  void readMeasurementPackage(const MeasurementPackage &measurement_pack);
+  bool isInitialized(){return initializationFlag;};
+  void processMeasurement(const MeasurementPackage &measurementPack);
+  void readMeasurementPackage(const MeasurementPackage &measurementPack);
   void initEKF();
   void initStateMean();
   void initStateCov();
@@ -27,28 +27,28 @@ public:
   void updateRadarMeasurementMatrix();
   Eigen::MatrixXd calculateJacobian();
   Eigen::VectorXd PredMeasurement();
-  bool isRadar(){return sensor_type_ == MeasurementPackage::RADAR;};
-  bool isLaser(){return sensor_type_ == MeasurementPackage::LASER;};
+  bool isRadar(){return sensorType_ == MeasurementPackage::RADAR;};
+  bool isLaser(){return sensorType_ == MeasurementPackage::LASER;};
 
   Eigen::VectorXd getStateMean();
 
 
  private:
-  bool is_initialized_ = false;
-  long long previous_timestamp_ = 0;
-  Eigen::VectorXd measurement_;
+  bool initializationFlag = false;
+  long long previousTimestamp_ = 0;
   double dt_ = 0.0;
-  MeasurementPackage::SensorType sensor_type_ = MeasurementPackage::RADAR;
+  MeasurementPackage::SensorType sensorType_ = MeasurementPackage::RADAR;
 
-  Eigen::VectorXd state_mean_;
-  Eigen::MatrixXd state_cov_;
-  Eigen::MatrixXd state_transition_matrix_;
-  Eigen::MatrixXd process_noise_cov_;
-  Eigen::MatrixXd laser_measurement_noise_cov_;
-  Eigen::MatrixXd radar_measurement_noise_cov_;
-  Eigen::MatrixXd laser_measurement_matrix_;
-  Eigen::MatrixXd radar_measurement_matrix_;
-  Eigen::VectorXd noise_;
+  Eigen::VectorXd measurement_;
+  Eigen::VectorXd stateMean_;
+  Eigen::MatrixXd stateCov_;
+  Eigen::MatrixXd stateTransitionMatrix_;
+  Eigen::MatrixXd noise_;
+  Eigen::MatrixXd processNoiseCov_;
+  Eigen::MatrixXd radarMeasurementNoiseCov_;
+  Eigen::MatrixXd laserMeasurementNoiseCov_;
+  Eigen::MatrixXd laserMeasurementMatrix_;
+  Eigen::MatrixXd radarMeasurementMatrix_;
 };
 
 #endif // EKF_H_
