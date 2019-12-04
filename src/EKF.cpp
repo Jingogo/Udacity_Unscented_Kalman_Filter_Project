@@ -56,10 +56,10 @@ void EKF::initStateMean()
   double px, py;
   if (isRadar())
   {
-    const double ro = measurement_[0];
+    const double rho = measurement_[0];
     const double theta = measurement_[1];
-    px = ro * cos(theta);
-    py = ro * sin(theta);
+    px = rho * cos(theta);
+    py = rho * sin(theta);
   }
   else if (isLaser())
   {
@@ -123,25 +123,25 @@ void EKF::updateStateByRadar()
   updateRadarMeasurementMatrix();
   Eigen::MatrixXd Ht = radar_measurement_matrix_.transpose();
   Eigen::MatrixXd S = (radar_measurement_matrix_ * state_cov_) * Ht + radar_measurement_noise_cov_;
-  Eigen::MatrixXd K = state_cov_ * Ht * S.inverse();
+  Eigen::MatrixXd kalman_gain = state_cov_ * Ht * S.inverse();
   Eigen::VectorXd pred_measurement = PredMeasurement();
   Eigen::VectorXd measurement_diff = measurement_ - pred_measurement;
   tools::normalizeRadarMeasurement(measurement_diff);
   Eigen::MatrixXd I = Eigen::MatrixXd::Identity(4, 4);
-  state_mean_ = state_mean_ + K * measurement_diff;
-  state_cov_ = (I - K * radar_measurement_matrix_) * state_cov_;
+  state_mean_ = state_mean_ + kalman_gain * measurement_diff;
+  state_cov_ = (I - kalman_gain * radar_measurement_matrix_) * state_cov_;
 }
 
 void EKF::updateStateByLaser()
 {
   Eigen::MatrixXd Ht = laser_measurement_matrix_.transpose();
   Eigen::MatrixXd S = (laser_measurement_matrix_ * state_cov_) * Ht + laser_measurement_noise_cov_;
-  Eigen::MatrixXd K = state_cov_ * Ht * S.inverse();
+  Eigen::MatrixXd kalman_gain = state_cov_ * Ht * S.inverse();
   Eigen::VectorXd pred_measurement = laser_measurement_matrix_ * state_mean_;
   Eigen::VectorXd measurement_diff = measurement_ - pred_measurement;
   Eigen::MatrixXd I = Eigen::MatrixXd::Identity(4, 4);
-  state_mean_ = state_mean_ + K * measurement_diff;
-  state_cov_ = (I - K * laser_measurement_matrix_) * state_cov_;
+  state_mean_ = state_mean_ + kalman_gain * measurement_diff;
+  state_cov_ = (I - kalman_gain * laser_measurement_matrix_) * state_cov_;
 }
 
 void EKF::updateRadarMeasurementMatrix()

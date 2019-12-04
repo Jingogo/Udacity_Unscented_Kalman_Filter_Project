@@ -9,10 +9,10 @@ public:
   UKF();
   virtual ~UKF();
   void initWeights();
-  const bool isInitialized() const;
+  const bool isInitialized() const {return is_initialized_;};
   void processMeasurement(const MeasurementPackage &meas_package);
   void readMeasurementPackage(const MeasurementPackage &meas_package);
-  void initializeUKF();
+  void initUKF();
   void initStateMean();
   void initStateCov();
 
@@ -24,42 +24,21 @@ public:
   
   void updateState();
   void updateStateByLaser();
-  void predictMeasurementLaser();
-  void updatePredMeasurementMeanLaser();
-  void updatePredMeasurementCovLaser();
+  void predictLaserMeasurement();
+  void updatePredLaserMeasurementMean();
+  void updatePredLaserMeasurementCov();
   void updateKalmanGainLaser();
-  void updateStateLaser();
   
   void updateStateByRadar();
-  void predictMeasurementRadar();
+  void predictRadarMeasurement();
   void updatePredMeasurementSig();
-  void updatePredMeasurementMeanRadar();
-  void updatePredMeasurementCovRadar();
+  void updatePredRadarMeasurementMean();
+  void updatePredRadarMeasurementCov();
   void updateKalmanGainRadar();
-  void updateStateRadar();
   
   Eigen::VectorXd getStateMean();
-  Eigen::VectorXd getWeights();
-  Eigen::MatrixXd getStateCov();
-  Eigen::MatrixXd getPredStateSig();
-  Eigen::MatrixXd getPredMeasurementSig();
-  Eigen::VectorXd getPredMeasurementMean();
-  Eigen::MatrixXd getPredMeasurementCov();
-  Eigen::MatrixXd getKalmanGain();
-  
-  void setWeights(const Eigen::VectorXd weights);
-  void setLambda(const double &lambda);
-  void setPredStateSig(const Eigen::MatrixXd &pred_state_sig);
-  void setStateMean(const Eigen::VectorXd state_mean);
-  void setMeasurement(const Eigen::VectorXd measurement);
-  void setSensorType(const MeasurementPackage::SensorType & sensor_type);
-  void setStateCov(const Eigen::MatrixXd &state_cov);
-  void setPredMeasurementCov(const Eigen::MatrixXd &pred_measurement_cov);
-
   bool isRadar(){return sensor_type_ == MeasurementPackage::RADAR;};
   bool isLaser(){return sensor_type_ == MeasurementPackage::LASER;};
-
-  void print();
 
 private:
   bool is_initialized_;
@@ -74,7 +53,7 @@ private:
   Eigen::MatrixXd pred_measurement_sig_;
   Eigen::VectorXd pred_measurement_mean_;
   Eigen::MatrixXd pred_measurement_cov_;
-  Eigen::MatrixXd measurement_matrix_laser_;
+  Eigen::MatrixXd laser_measurement_matrix_;
   // time when the state is true, in us
   long long previous_timestamp_;
   double dt_;
@@ -98,8 +77,8 @@ private:
   // Weights of sigma points
   Eigen::VectorXd weights_;
   Eigen::MatrixXd process_noise_cov_;
-  Eigen::MatrixXd measurement_noise_cov_laser_;
-  Eigen::MatrixXd measurement_noise_cov_radar_;
+  Eigen::MatrixXd laser_measurement_noise_cov_;
+  Eigen::MatrixXd radar_measurement_noise_cov_;
   Eigen::MatrixXd kalman_gain_;
 };
 
