@@ -1,8 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>
-#include <uWS/uWS.h>
-#include "json.hpp"
 #include "UKF.h"
 #include "tools.h"
 
